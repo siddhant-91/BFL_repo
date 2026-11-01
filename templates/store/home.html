@@ -1,0 +1,45 @@
+{% extends 'store/base.html' %}
+{% block title %}BFL — Menswear for every day{% endblock %}
+{% block content %}
+<section class="home-hero">
+  <div class="home-intro">
+    <p class="eyebrow">A BETTER EVERYDAY WARDROBE</p>
+    <h1>Good clothes.<br><em>Well found.</em></h1>
+    <p>BFL brings together the menswear you reach for most: easy tees, considered shirts, dependable layers, denim and the details that finish a look. A clear edit, good quality, and honest prices make it easier to dress well every day.</p>
+    <a class="button button-dark" href="{% url 'shop' %}">Shop menswear <span>↗</span></a>
+    <a class="intro-about" href="#about-bfl">A little about BFL <span>↓</span></a>
+  </div>
+  <div class="campaign-wrap">
+    {% if featured %}
+    <div class="campaign-carousel" data-carousel aria-label="Featured BFL pieces">
+      {% for p in featured %}
+      <article class="campaign-slide {% if forloop.first %}is-active{% endif %}" data-slide {% if not forloop.first %}aria-hidden="true"{% endif %}>
+        <a class="campaign-image" href="{% url 'product' p.slug %}" aria-label="View {{ p.name }}">
+          {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.image_alt|default:p.name }}">{% else %}<div class="image-placeholder"><span>BFL</span><small>PRODUCT IMAGE</small></div>{% endif %}
+          <span class="campaign-index">BFL SELECTS · {{ forloop.counter|stringformat:"02d" }}</span>
+          {% if p.discount_percent %}<span class="discount-badge">{{ p.discount_percent }}% OFF</span>{% endif %}
+        </a>
+        <div class="campaign-caption">
+          <div><p class="product-category">{{ p.category.name }}{% if p.style %} · {{ p.style }}{% endif %}</p><a href="{% url 'product' p.slug %}" class="campaign-name">{{ p.name }}</a></div>
+          <div class="campaign-price"><strong>₹{{ p.price }}</strong>{% if p.compare_at_price %}<del>MRP ₹{{ p.compare_at_price }}</del>{% endif %}<a class="campaign-cta" href="{% url 'product' p.slug %}">Discover the piece ↗</a></div>
+        </div>
+      </article>
+      {% endfor %}
+      <div class="campaign-controls" aria-label="Featured product controls">
+        <button type="button" data-carousel-prev aria-label="Previous featured product">←</button>
+        <div class="campaign-dots">{% for p in featured %}<button type="button" data-carousel-dot="{{ forloop.counter0 }}" aria-label="Show featured product {{ forloop.counter }}" {% if forloop.first %}aria-current="true"{% endif %}></button>{% endfor %}</div>
+        <button type="button" data-carousel-next aria-label="Next featured product">→</button>
+      </div>
+    </div>
+    {% else %}
+    <div class="campaign-empty"><div class="campaign-empty-art"><div class="empty-circle"></div><div class="empty-garment"></div><span>BFL</span></div><div><p class="eyebrow">THE BFL EDIT</p><h2>Everyday, considered.</h2><p>Featured pieces selected by the BFL team will appear here.</p><a class="text-link" href="{% url 'shop' %}">Explore the collection ↗</a></div></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="category-strip"><div class="section-head"><div><p class="eyebrow">MADE SIMPLE TO EXPLORE</p><h2>Start with what you need</h2></div><a class="text-link" href="{% url 'shop' %}">Shop all menswear ↗</a></div><div class="category-cards">{% for c in categories %}<a href="{% url 'shop' %}?category={{ c.slug }}" class="category-card"><span>{{ c.name }}</span><b>↗</b></a>{% endfor %}</div></section>
+
+<section class="about-bfl" id="about-bfl"><div class="about-mark">BFL</div><div><p class="eyebrow">THE THINKING BEHIND BFL</p><h2>A clearer way<br>to get dressed.</h2><p>BFL is a menswear destination built around real wardrobes and everyday life. We bring useful categories together in one place, make it easier to find the right fit, and keep quality and value in view. No complicated rules. Just good pieces you’ll want to wear again.</p><a class="button button-outline" href="{% url 'shop' %}">Find your everyday <span>↗</span></a></div></section>
+
+<section class="product-section"><div class="section-head"><div><p class="eyebrow">THE LATEST FROM BFL</p><h2>Recently added</h2></div><a class="text-link" href="{% url 'shop' %}">View the full collection ↗</a></div><div class="product-grid">{% for p in new_arrivals %}{% include 'store/product_card.html' with product=p %}{% empty %}<p class="empty-note">New pieces are on their way.</p>{% endfor %}</div></section>
+{% endblock %}

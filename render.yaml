@@ -1,0 +1,68 @@
+services:
+  - type: web
+    name: bfl-staging
+    runtime: docker
+    plan: free
+    branch: develop
+    dockerfilePath: ./Dockerfile
+    autoDeployTrigger: checksPass
+    healthCheckPath: /health/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_S3_BUCKET
+        sync: false
+      - key: SUPABASE_S3_ACCESS_KEY
+        sync: false
+      - key: SUPABASE_S3_SECRET_KEY
+        sync: false
+      - key: SUPABASE_S3_ENDPOINT
+        sync: false
+      - key: SUPABASE_S3_REGION
+        sync: false
+      - key: SUPABASE_MEDIA_DOMAIN
+        sync: false
+      - key: BFL_SHIPPING_FEE
+        value: "99"
+      - key: FREE_SHIPPING_THRESHOLD
+        value: "2499"
+
+  - type: web
+    name: bfl-production
+    runtime: docker
+    plan: starter
+    branch: main
+    dockerfilePath: ./Dockerfile
+    autoDeployTrigger: checksPass
+    healthCheckPath: /health/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_S3_BUCKET
+        sync: false
+      - key: SUPABASE_S3_ACCESS_KEY
+        sync: false
+      - key: SUPABASE_S3_SECRET_KEY
+        sync: false
+      - key: SUPABASE_S3_ENDPOINT
+        sync: false
+      - key: SUPABASE_S3_REGION
+        sync: false
+      - key: SUPABASE_MEDIA_DOMAIN
+        sync: false
+      - key: BFL_SHIPPING_FEE
+        value: "99"
+      - key: FREE_SHIPPING_THRESHOLD
+        value: "2499"

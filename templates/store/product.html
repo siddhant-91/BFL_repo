@@ -1,0 +1,52 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}{{ product.name }} — BFL{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{% url 'home' %}">Home</a> / <a href="{% url 'shop' %}?category={{ product.category.slug }}">{{ product.category.name }}</a> / {{ product.name }}</div>
+<section class="product-detail">
+  <div class="detail-gallery">
+    <div class="detail-image">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.image_alt|default:product.name }}">{% else %}<div class="image-placeholder image-placeholder-large"><span>BFL</span></div>{% endif %}</div>
+    {% for photo in product.photos.all %}<div class="detail-image detail-image-small"><img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}"></div>{% endfor %}
+  </div>
+  <div class="detail-info">
+    <p class="eyebrow">{{ product.category.name }}{% if product.style %} · {{ product.style }}{% endif %}</p>
+    <h1>{{ product.name }}</h1>
+    <div class="detail-pricing" data-price-display data-mrp="{{ product.compare_at_price|default:0 }}">
+      <strong class="detail-sale-price" data-sale-price>₹{{ product.price }}</strong>
+      {% if product.compare_at_price %}<del class="detail-mrp" data-mrp-label>MRP ₹{{ product.compare_at_price }}</del><span class="discount-badge inline-discount" data-discount>{% if product.discount_percent %}{{ product.discount_percent }}% OFF{% endif %}</span>{% endif %}
+    </div>
+    <p class="detail-description">{{ product.description|linebreaksbr }}</p>
+    {% if product.fit %}<p class="detail-spec"><span>Fit</span>{{ product.fit }}</p>{% endif %}
+    {% if product.material %}<p class="detail-spec"><span>Fabric</span>{{ product.material }}</p>{% endif %}
+
+    {% if product.available_variants %}
+    <form method="post" action="{% url 'add_to_cart' %}" class="add-form">{% csrf_token %}
+      <label class="field-label" for="variant">Choose colour & size</label>
+      <select id="variant" name="variant" required data-variant-select data-mrp="{{ product.compare_at_price|default:0 }}">
+        <option value="">Choose an option</option>
+        {% for v in product.variants.all %}{% if v.active and v.stock > 0 %}<option value="{{ v.id }}" data-price="{{ v.sale_price }}" {% if product.compare_at_price %}data-mrp="{{ product.compare_at_price }}"{% endif %}>{{ v.color }}{% if v.color and v.size %} / {% endif %}{{ v.size }} — {{ v.stock }} left</option>{% endif %}{% endfor %}
+      </select>
+      <div class="purchase-row"><label class="quantity-field">Qty<input name="quantity" type="number" min="1" max="10" value="1"></label><button class="button button-dark button-wide">Add to bag <span>↗</span></button></div>
+      <p class="secure-note">Choose your size before adding to bag · Secure checkout</p>
+    </form>
+    {% else %}<p class="out-of-stock">Currently unavailable</p>{% endif %}
+
+    <details class="size-guide">
+      <summary><span>Size guide</span><small>Measurements are for the finished garment.</small></summary>
+      <div class="size-guide-layout">
+        <div class="size-guide-illustration"><img src="{% static chart_image %}" alt="{% if chart_type == 'upper' %}Diagram showing chest, shoulder, sleeve and garment length measurements{% elif chart_type == 'bottoms' %}Diagram showing waist, hip, rise and inseam measurements{% else %}Diagram showing how to measure sock foot length{% endif %}"><p>Measure a similar garment laid flat for the best comparison.</p></div>
+        <div class="size-guide-data"><p class="eyebrow">GARMENT MEASUREMENTS · CM</p>
+          {% if product.size_chart_rows %}
+          <div class="chart-scroll"><table class="size-table">
+            <thead>{% if chart_type == 'upper' %}<tr><th>Size</th><th>Chest width</th><th>Shoulder</th><th>Length</th><th>Sleeve</th></tr>{% elif chart_type == 'bottoms' %}<tr><th>Size</th><th>Waist width</th><th>Hip width</th><th>Rise</th><th>Inseam</th></tr>{% else %}<tr><th>Size</th><th>Foot length</th></tr>{% endif %}</thead>
+            <tbody>{% for row in product.size_chart_rows.all %}<tr><th>{{ row.size }}</th>{% if chart_type == 'upper' %}<td>{{ row.chest|default:"—" }}</td><td>{{ row.shoulder|default:"—" }}</td><td>{{ row.garment_length|default:"—" }}</td><td>{{ row.sleeve_length|default:"—" }}</td>{% elif chart_type == 'bottoms' %}<td>{{ row.waist|default:"—" }}</td><td>{{ row.hip|default:"—" }}</td><td>{{ row.rise|default:"—" }}</td><td>{{ row.inseam|default:"—" }}</td>{% else %}<td>{{ row.foot_length|default:"—" }}</td>{% endif %}</tr>{% endfor %}</tbody>
+          </table></div>
+          {% else %}<p class="chart-pending">BFL is preparing this product's exact garment measurements. For sizing help, contact us before ordering.</p>{% endif %}
+          <p class="chart-note">Measurements can vary slightly between styles. If you are between sizes, compare these with a similar piece you already own.</p>
+        </div>
+      </div>
+    </details>
+    <div class="product-details"><details><summary>Product details</summary><p>{{ product.description|default:"A considered everyday piece, designed for comfort and made to last." }}</p>{% if product.care %}<p>Care: {{ product.care }}</p>{% endif %}</details><details><summary>Delivery & returns</summary><p>Delivery options and return terms are shown at checkout. Contact us if you need help with sizing.</p></details></div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BFL — considered menswear, made for everyday.">
+  <title>{% block title %}BFL — Built for Living{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'store/site.css' %}">
+</head>
+<body>
+  <div class="topline">Complimentary delivery on orders above ₹{{ free_shipping_threshold }}</div>
+  <header class="site-header">
+    <a class="wordmark" href="{% url 'home' %}">BFL</a>
+    <nav class="main-nav"><a href="{% url 'shop' %}">Shop all</a>{% for c in categories %}<a href="{% url 'shop' %}?category={{ c.slug }}">{{ c.name }}</a>{% endfor %}<a href="{% url 'home' %}#about-bfl">About BFL</a></nav>
+    <div class="header-actions"><form class="search" action="{% url 'shop' %}"><input name="q" placeholder="Search BFL" aria-label="Search products"><button aria-label="Search">⌕</button></form><a href="{% url 'cart' %}" class="bag">Bag <span>({{ cart_count }})</span></a></div>
+  </header>
+  {% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="footer"><div class="footer-top"><a class="wordmark" href="{% url 'home' %}">BFL</a><p>Everyday pieces.<br>Considered, always.</p><div class="footer-links"><a href="{% url 'shop' %}">Shop</a><a href="{% url 'cart' %}">Your bag</a><a href="mailto:hello@bfl.store">Contact</a></div></div><div class="footer-bottom"><span>© {% now "Y" %} BFL. All rights reserved.</span><span>Built for living.</span></div></footer>
+  <script defer src="{% static 'store/storefront.js' %}"></script>
+</body>
+</html>

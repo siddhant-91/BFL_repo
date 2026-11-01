@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 400" role="img" aria-labelledby="title desc">
+  <title id="title">How to measure foot length</title><desc id="desc">Line drawing of a foot with a line from heel to toe.</desc>
+  <rect width="360" height="400" rx="4" fill="#f1f1eb"/>
+  <path d="M79 298c24 2 63-5 90-23 24-16 40-44 55-86 12-33 25-55 43-69 15-12 30-8 39 4 10 13 7 29-3 43-12 16-26 31-34 59-11 41-13 84-34 105-24 24-72 28-111 22l-53-8c-27-4-43-15-40-30 3-12 22-19 48-17Z" fill="#dfe4dc" stroke="#53584f" stroke-width="3" stroke-linejoin="round"/>
+  <g fill="none" stroke="#b5573d" stroke-width="2">
+    <path d="M77 340 306 125M72 334l10 11M301 120l10 11"/>
+    <path d="M138 260 260 145"/>
+  </g>
+  <g fill="#43473f" font-family="Arial,sans-serif" font-size="14">
+    <text x="120" y="366">HEEL TO TOE · FOOT LENGTH</text>
+  </g>
+</svg>

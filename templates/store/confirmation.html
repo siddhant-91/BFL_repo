@@ -1,0 +1,5 @@
+{% extends 'store/base.html' %}
+{% block title %}Order received — BFL{% endblock %}
+{% block content %}
+<div class="confirmation"><div class="checkmark">✓</div><p class="eyebrow">THANK YOU FOR CHOOSING BFL</p><h1>Order received.</h1><p class="confirmation-lead">Your order <strong>{{ order.number }}</strong> is {% if order.payment_status == 'paid' %}paid and{% else %}being{% endif %} prepared with care.</p><div class="confirmation-card"><div><span>Order total</span><strong>₹{{ order.total }}</strong></div><div><span>Payment</span><strong>{{ order.get_payment_method_display }} · {{ order.get_payment_status_display }}</strong></div><div><span>Deliver to</span><strong>{{ order.customer_name }}<br>{{ order.address }}, {{ order.city }} {{ order.postal_code }}</strong></div>{% for item in order.items.all %}<div><span>{{ item.product_name }} · {{ item.variant_label }} × {{ item.quantity }}</span><strong>₹{{ item.unit_price }}</strong></div>{% endfor %}</div><a href="{% url 'shop' %}" class="button button-dark">Back to the collection</a></div>
+{% endblock %}

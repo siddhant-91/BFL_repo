@@ -1,0 +1,9 @@
+{% extends 'store/base.html' %}
+{% block title %}Payment — BFL{% endblock %}
+{% block content %}
+<div class="payment-box"><p class="eyebrow">SECURE CHECKOUT</p><h1>Complete your order</h1><p>Order {{ order.number }} · ₹{{ order.total }}</p><button id="pay-now" class="button button-dark">Pay securely with Razorpay</button><p id="pay-error" class="form-error"></p></div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script><script>
+const options={key:"{{ razorpay_key|escapejs }}",amount:"{{ order.total|add:0 }}00",currency:"INR",name:"BFL",description:"Order {{ order.number }}",order_id:"{{ order.gateway_order_id|escapejs }}",prefill:{name:"{{ order.customer_name|escapejs }}",email:"{{ order.email|escapejs }}",contact:"{{ order.phone|escapejs }}"},theme:{color:"#20211f"},handler:async(response)=>{const result=await fetch("{% url 'verify_payment' %}",{method:"POST",headers:{"Content-Type":"application/json","X-CSRFToken":"{{ csrf_token }}"},body:JSON.stringify({...response,order_number:"{{ order.number }}"})});const data=await result.json();if(data.url){location.href=data.url}else{document.getElementById("pay-error").textContent=data.error||"Payment verification failed. Contact BFL before retrying."}},modal:{ondismiss:()=>{document.getElementById("pay-error").textContent="Payment was not completed. Your order is still pending."}}};
+document.getElementById("pay-now").addEventListener("click",()=>new Razorpay(options).open());
+</script>
+{% endblock %}
