@@ -40,3 +40,5 @@ The included Dockerfile is the production app container. It runs database migrat
 - Update order progress from the recent orders table. Cancelling an order returns its reserved units to stock. Mark a COD order delivered to record it as paid.
 
 The launch defaults assume INR, a ₹99 delivery charge below ₹2,499, and no delivery charge at or above ₹2,499. Change BFL_SHIPPING_FEE and FREE_SHIPPING_THRESHOLD in the app environment if your policy differs. Product photos are public catalog assets; order and address data stay in the database.
+
+For the full nontechnical listing workflow and photo checklist, see [PRODUCT_CATALOG.md](PRODUCT_CATALOG.md). For hosting and branch setup, see [DEPLOYMENT.md](DEPLOYMENT.md).

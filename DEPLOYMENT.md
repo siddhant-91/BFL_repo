@@ -24,7 +24,32 @@ The repository includes `.github/workflows/ci.yml`, `.github/dependabot.yml`, an
 
 GitHub Actions currently runs migration drift checks, Django configuration checks, static collection, and the storefront test suite on pull requests and pushes to `develop`/`main`. Dependabot opens dependency and workflow update PRs for review. CI does not deploy; Render performs the deployment after checks pass.
 
-The `render.yaml` blueprint uses a free staging web service and a paid starter production web service. Free services can sleep, which makes staging slower to open. Review Render's current plan availability and price before enabling the blueprint. Do not connect staging to the production database or bucket. Use two Supabase projects, each owned by you: enter staging credentials only on `bfl-staging`, and production credentials only on `bfl-production`.
+The `render.yaml` blueprint uses a free staging web service and a small paid production web service. Free services can sleep, which makes staging slower to open. Do not connect staging to the production database or bucket. Use two Supabase projects, each owned by you: enter staging credentials only on `bfl-staging`, and production credentials only on `bfl-production`.
+
+## Deploy BFL from the connected GitHub repository
+
+The repository is connected to GitHub on `main`. The remaining deployment work needs accounts you control in Supabase and Render; keep all database passwords and S3 keys in those dashboards, never in chat or a Git commit.
+
+1. **Create the staging branch.** Create `develop` from `main` in GitHub (or push a local `develop` branch). The Render blueprint expects this branch for staging. Keep `main` as the live-release branch.
+2. **Create two Supabase projects.** Name them clearly, for example `bfl-staging` and `bfl-production`, under your own Supabase organization. Pick the Mumbai region for the database if you want the data close to your India-based customers; choose the nearest supported Render region (Singapore) for the app. If you prefer the app and database in the same region, choose Singapore for both. Region is chosen when creating a Supabase project, so decide before you create it. In each, create a public `product-images` Storage bucket. Public means visitors can read catalog pictures; uploads still go through Django. Generate S3 access keys for server-side uploads. The S3 credentials can access the project's buckets, so do not put them in frontend code. [Supabase regions](https://supabase.com/docs/guides/platform/regions) · [Supabase S3 authentication](https://supabase.com/docs/guides/storage/s3/authentication)
+3. **Connect Render to GitHub.** In Render, authorize access to `BFL_repo`, choose **New → Blueprint**, and select this repository and its `render.yaml`. Review the two services before applying the blueprint. It creates a free `bfl-staging` web service from `develop` and a paid `bfl-production` service from `main`. Render can deploy linked repositories after the configured CI checks pass. [Render web services](https://render.com/docs/web-services) · [Render Blueprint spec](https://render.com/docs/blueprint-spec)
+4. **Set each service's environment.** Render fills the service's own `RENDER_EXTERNAL_HOSTNAME` automatically, so the initial Render URL is allowed without extra setup. In Render's Environment tab, add these values independently for staging and production:
+
+       DATABASE_URL=<that environment's Supabase Postgres connection string>
+       SUPABASE_S3_BUCKET=product-images
+       SUPABASE_S3_ACCESS_KEY=<that project's S3 access key>
+       SUPABASE_S3_SECRET_KEY=<that project's S3 secret>
+       SUPABASE_S3_ENDPOINT=https://<project-ref>.storage.supabase.co/storage/v1/s3
+       SUPABASE_S3_REGION=<region shown in Supabase Storage settings>
+       SUPABASE_MEDIA_DOMAIN=<project-ref>.supabase.co/storage/v1/object/public/product-images
+
+   Keep `DJANGO_SECRET_KEY` as the independently generated value from the Blueprint. Set `DJANGO_ALLOWED_HOSTS` to any custom domain you connect (hostnames only, no `https://`). Keep the staging database, bucket, Django secret, and allowed hosts separate from production. The database URL is available from that Supabase project's **Connect** panel; use its IPv4 session pooler URL if direct Postgres IPv6 connectivity is unavailable, and keep SSL required. Supabase documents that its shared session pooler works over IPv4 on all plans. [Supabase database connection options](https://supabase.com/docs/guides/database/connecting-to-postgres)
+5. **Deploy and check health.** Let each initial deploy finish. Open `https://<service-host>/health/`; it should return `{"status":"ok"}`. Then visit the storefront. If the deploy fails, inspect the Render deploy logs; common first-deploy issues are a missing environment variable, wrong Supabase region/endpoint, or an incorrect database connection string.
+6. **Create the store owner account.** The production service is paid, so open its Render **Shell** after a successful deploy and run `python manage.py createsuperuser`. Render does not provide a dashboard shell for free web services. For staging, either temporarily move it to a paid plan to run the command, or run `createsuperuser` locally using the staging `DATABASE_URL` supplied as a temporary local environment variable. Never point that command at production by mistake. [Render shell access](https://render.com/docs/ssh)
+7. **Test staging before public release.** Sign in at `/manage/`, add sample products following [PRODUCT_CATALOG.md](PRODUCT_CATALOG.md), check uploaded images load from the staging bucket, place a cash-on-delivery test order, and confirm inventory decreases for the selected size. Do not use real customer records for this test.
+8. **Connect the public domain.** Add the domain to the production service in Render, then copy the DNS records Render gives you into Cloudflare. Once HTTPS is active, set `DJANGO_ALLOWED_HOSTS` to the domain (and `www` if used). Test checkout, order confirmation, photos, and the admin login at the domain before announcing it.
+
+This makes staging usable for testing and production a distinct public store. New products entered in staging do not transfer to production; enter the approved catalog in production after validating your workflow, or add a carefully reviewed spreadsheet import later.
 
 ## Login recommendation for the MVP
 

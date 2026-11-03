@@ -14,6 +14,8 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
     fields = ("image", "alt_text", "order")
+    verbose_name = "gallery photo"
+    verbose_name_plural = "Extra product photos (optional)"
 
 class ProductAdminForm(forms.ModelForm):
     class Meta:
@@ -27,6 +29,20 @@ class ProductAdminForm(forms.ModelForm):
         self.fields["compare_at_price"].label = "MRP printed on the product (₹)"
         self.fields["compare_at_price"].required = True
         self.fields["featured"].label = "Show in homepage product banner"
+        self.fields["description"].help_text = "Describe the feel, fabric, and details in 2–4 short sentences. Example: Soft cotton jersey with a relaxed fit and a clean ribbed crew neck."
+        self.fields["image"].help_text = "Main product photo shown on the shop and product page. Upload a clear portrait photo with the garment centered."
+        self.fields["image_alt"].help_text = "Briefly describe what is visible, for shoppers using screen readers. Example: Black cotton crew-neck T-shirt, front view."
+        self.fields["style"].help_text = "Garment type or neckline, e.g. Round neck, Collar neck, Half sleeve."
+        self.fields["fit"].help_text = "Keep names consistent across products, e.g. Regular, Relaxed, Slim."
+        self.fields["material"].help_text = "Fabric and composition, e.g. 100% cotton or cotton blend."
+        self.fields["care"].help_text = "Simple washing instructions customers should follow."
+        self.fields["tags"].help_text = "Optional search words separated by commas, e.g. everyday, summer, graphic."
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("active") and not cleaned.get("image"):
+            self.add_error("image", "Add a main product photo before publishing. To finish the listing later, save it as a draft by turning off Active.")
+        return cleaned
 
 class VariantInlineFormSet(BaseInlineFormSet):
     SIZE_OPTIONS = {
@@ -60,9 +76,17 @@ class VariantInlineFormSet(BaseInlineFormSet):
                     choices.append((current, current))
                 form.fields["size"].widget = forms.Select(choices=choices)
 
+    def product_is_active(self):
+        request = getattr(type(self), "request", None)
+        if request and request.method == "POST":
+            return request.POST.get("active") in ("on", "true", "1")
+        return bool(self.instance.active)
+
     def clean(self):
         super().clean()
         if any(self.errors):
+            return
+        if not self.product_is_active():
             return
         options = self.SIZE_OPTIONS.get(getattr(self, "selected_size_system", "custom"))
         if not options:
@@ -113,6 +137,8 @@ class SizeChartInlineFormSet(VariantInlineFormSet):
         super().clean()
         if any(self.errors):
             return
+        if not self.product_is_active():
+            return
         request = getattr(type(self), "request", None)
         category = None
         if request and request.method == "POST":
@@ -141,10 +167,25 @@ class SizeChartInline(admin.TabularInline):
         formset.request = request
         return formset
 
+
+class VariantInlineForm(forms.ModelForm):
+    class Meta:
+        model = Variant
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["size"].help_text = "Add one row for each size and color combination you sell."
+        self.fields["color"].help_text = "Use the same color name consistently, e.g. Black or Navy."
+        self.fields["sku"].help_text = "Your unique stock code, e.g. BFL-TEE-001-BLK-M."
+        self.fields["stock"].help_text = "Enter the number of pieces physically available in this size and color."
+
+
 class VariantInline(admin.TabularInline):
     model = Variant
     extra = 1
     fields = ("size", "color", "sku", "price", "stock", "active")
+    form = VariantInlineForm
     formset = VariantInlineFormSet
 
     def get_formset(self, request, obj=None, **kwargs):

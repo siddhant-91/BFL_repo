@@ -3,6 +3,7 @@ services:
     name: bfl-staging
     runtime: docker
     plan: free
+    region: singapore
     branch: develop
     dockerfilePath: ./Dockerfile
     autoDeployTrigger: checksPass
@@ -13,7 +14,7 @@ services:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_ALLOWED_HOSTS
-        sync: false
+        value: ""
       - key: DATABASE_URL
         sync: false
       - key: SUPABASE_S3_BUCKET
@@ -36,7 +37,8 @@ services:
   - type: web
     name: bfl-production
     runtime: docker
-    plan: starter
+    plan: 0.5c-512mb
+    region: singapore
     branch: main
     dockerfilePath: ./Dockerfile
     autoDeployTrigger: checksPass
@@ -47,7 +49,7 @@ services:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_ALLOWED_HOSTS
-        sync: false
+        value: ""
       - key: DATABASE_URL
         sync: false
       - key: SUPABASE_S3_BUCKET

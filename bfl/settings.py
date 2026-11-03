@@ -6,6 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "local-only-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if render_hostname and render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_hostname)
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles", "store",
